@@ -1,0 +1,20 @@
+# Pyrefly — Python type checker configuration
+# https://pyrefly.org/docs/configuration/
+
+python-version = "3.12"
+python-interpreter = ".venv/bin/python"
+
+# Type check all Python files in the app/ directory
+project-includes = ["app/**/*.py"]
+
+# Exclude auto-generated, cache, and virtual environment directories
+project-excludes = [
+    ".venv/**",
+    ".mypy_cache/**",
+    ".ruff_cache/**",
+    ".pytest_cache/**",
+    "migrations/**",
+]
+
+# Import resolution root — lets Pyrefly resolve `from app.core import ...`
+search-path = ["."]

@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.pnpm-cache/
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Environment files (local overrides)
+.env.local
+.env.*.local
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+*.egg
+
+# Rust
+target/
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.pyo
+*.so
+!setup.py
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+htmlcov/
+.coverage
+
+# Data
+data/lancedb/
+*.db
+
+# Auto-generated build reports (volume-mounted, not versioned)
+backend/reports/
+
+# Docker
+docker-compose.override.yml
+
+.agents/
+.claude/commands/build-agent.md
+.claude/settings.local.json
+.env
+CLAUDE.md
+AGENTS.md
+
+.cargo
+/.claude
+
+# Testing
+proptest-regressions/
+
+recordings/
+

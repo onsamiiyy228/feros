@@ -1,0 +1,42 @@
+[package]
+name = "agent-kit"
+version = "0.1.0"
+edition = "2021"
+description = "Agent orchestrator — conversation history, tool execution, LLM streaming"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["sync", "rt", "rt-multi-thread", "time", "macros"] }
+
+# HTTP client (tool execution, memory store)
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+futures-util = "0.3"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging
+tracing = "0.1"
+
+# Error handling
+thiserror = "2"
+async-trait = "0.1.89"
+
+# Multi-vendor LLM support
+rig-core = "0.32"
+uuid = { version = "1.21.0", features = ["v4"] }
+urlencoding = "2"
+rquickjs = { version = "0.6", features = ["parallel", "bindgen"] }
+chrono = { version = "0.4.44", features = ["clock"] }
+chrono-tz = "0.10.4"
+secrecy = { version = "0.10", features = ["serde"] }
+zeroize = "1"
+
+# Recording types (RecordingConfig, AudioLayout, AudioFormat) live in common
+common = { path = "../common" }
+proto = { path = "../proto" }
+prost = "0.14.3"
+prost-types = "0.14.3"
+pbjson = "0.9.0"
+pbjson-types = "0.9.0"

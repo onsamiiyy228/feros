@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package stt;
+
+// ── Client → Server ─────────────────────────────────────────────
+
+message SttRequest {
+  oneof request {
+    AudioData audio = 1;
+    Finalize finalize = 2;
+    CloseStream close = 3;
+  }
+}
+
+message AudioData {
+  bytes pcm_data = 1;
+}
+
+message Finalize {}
+message CloseStream {}
+
+// ── Server → Client ─────────────────────────────────────────────
+
+message SttResponse {
+  oneof response {
+    TranscriptResult transcript = 1;
+  }
+}
+
+message TranscriptResult {
+  bool is_final = 1;
+  string text = 2;
+  float confidence = 3;
+  float start_time = 4;
+  float duration = 5;
+}

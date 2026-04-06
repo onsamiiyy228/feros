@@ -1,0 +1,74 @@
+[package]
+name = "integrations"
+version = "0.1.0"
+edition = "2021"
+description = "Integrations — credential encryption, secret resolution, provider registry"
+
+[lib]
+name = "integrations"
+crate-type = ["rlib"]
+
+[dependencies]
+# Encryption
+aes-gcm = "0.10"
+rand = "0.8"
+
+# Secret handling
+secrecy = { version = "0.10", features = ["serde"] }
+zeroize = "1"
+
+# Database
+sqlx = { version = "0.8", features = [
+    "runtime-tokio",
+    "postgres",
+    "uuid",
+    "chrono",
+    "json",
+] }
+
+# Provider registry
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+
+# Async
+tokio = { version = "1", features = ["time", "sync", "rt-multi-thread"] }
+
+# Logging
+tracing = "0.1"
+
+# HTTP client (for OAuth token refresh)
+reqwest = { version = "0.12", features = ["json"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+base64 = "0.22"
+async-trait = "0.1.89"
+hex = "0.4"
+
+# Constant-time comparison for token auth
+subtle = "2"
+
+# Vault server (lightweight axum HTTP server)
+axum = "0.8"
+
+
+pyo3 = { version = "0.28.2", features = ["extension-module"], optional = true }
+tower-http = { version = "0.6.8", features = ["trace"] }
+governor = "0.10.4"
+tower = "0.5.3"
+rcgen = "0.14.7"
+axum-server = { version = "0.8.0", features = ["tls-rustls"] }
+rustls = { version = "0.23.37", features = ["ring"] }
+
+[features]
+default = []
+extension-module = ["dep:pyo3"]
+
+[dev-dependencies]
+async-trait = "0.1.89"
+reqwest = { version = "0.12", features = ["json"] }
+tempfile = "3.27.0"
+vaultrs = "0.7.4"

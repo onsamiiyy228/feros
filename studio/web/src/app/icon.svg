@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    path { fill: #000; }
+    @media (prefers-color-scheme: dark) {
+      path { fill: #fff; }
+    }
+  </style>
+  <path d="M306 356V256H406C406 311.228 361.228 356 306 356Z" />
+  <path d="M206 456V356H306C306 411.228 261.228 456 206 456Z" />
+  <path d="M106 256H206V356C150.772 356 106 311.228 106 256Z" />
+  <path d="M406 156C350.772 156 306 200.772 306 256H206C206 145.543 295.543 56 406 56V156Z" />
+</svg>

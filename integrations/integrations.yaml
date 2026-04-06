@@ -1,0 +1,592 @@
+# Integration Registry — definitions and credential schemas for external services.
+#
+# Consumed by:
+#   - Rust integrations crate (registry.rs) — parsed via serde_yaml
+#   - Python integrations.py — serves to frontend + Builder Agent
+#   - Frontend credential forms — field labels, types, placeholders
+#   - Builder Agent — two-level loading (summary in prompt, detail on demand)
+#   - OAuth engine — authorize/token URLs, scopes, PKCE config
+#   - Token refresh service — refresh grant type, margin
+
+integrations:
+  airtable:
+    display_name: Airtable
+    description: "Save or retrieve records from Airtable bases. Use when user mentions Airtable, spreadsheets, databases, or record-keeping."
+    categories:
+      - database
+    icon: table
+    auth:
+      type: oauth2
+      client_auth_method: header
+      authorization_url: "https://airtable.com/oauth2/v1/authorize"
+      token_url: "https://airtable.com/oauth2/v1/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "data.records:read"
+        - "data.records:write"
+        - "schema.bases:read"
+      scope_separator: " "
+      pkce: true
+      token_expires_in_seconds: 7200
+      refresh_margin_minutes: 10
+    credentials:
+      api_token:
+        type: string
+        title: Personal Access Token (Advanced)
+        description: "Only needed if using a PAT instead of OAuth"
+        secret: true
+        required: false
+        doc_url: "https://support.airtable.com/docs/creating-personal-access-tokens"
+    connection_config:
+      base_id:
+        type: string
+        title: Base ID
+        description: "Found in your Airtable URL: airtable.com/{base_id}/..."
+        example: "appXXXXXXXXXXXXXX"
+    api:
+      base_url: "https://api.airtable.com/v0"
+      headers:
+        authorization: "Bearer ${credentials.api_token}"
+
+  google_sheets:
+    display_name: Google Sheets
+    description: "Read from or append rows to Google Sheets. Use when user mentions Google Sheets, spreadsheets, or logging data to sheets."
+    categories:
+      - database
+    icon: sheet
+    auth:
+      type: oauth2
+      authorization_url: "https://accounts.google.com/o/oauth2/v2/auth"
+      token_url: "https://oauth2.googleapis.com/token"
+      authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "https://www.googleapis.com/auth/spreadsheets"
+      scope_separator: " "
+      pkce: true
+      token_expires_in_seconds: 3600
+      refresh_margin_minutes: 5
+    credentials:
+      api_key:
+        type: string
+        title: Google API Key (Advanced)
+        description: "Only needed if using an API key instead of OAuth"
+        secret: true
+        required: false
+        doc_url: "https://developers.google.com/sheets/api/quickstart/python"
+    connection_config:
+      spreadsheet_id:
+        type: string
+        title: Spreadsheet ID
+        description: "Found in your Google Sheets URL between /d/ and /edit"
+        example: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
+    api:
+      base_url: "https://sheets.googleapis.com/v4"
+      headers:
+        authorization: "Bearer ${credentials.api_key}"
+
+  slack:
+    display_name: Slack
+    description: "Send messages or notifications to Slack channels. Use when user mentions Slack, notifications, alerts, or team messages."
+    categories:
+      - messaging
+    icon: message-circle
+    auth:
+      type: oauth2
+      authorization_url: "https://slack.com/oauth/v2/authorize"
+      token_url: "https://slack.com/api/oauth.v2.access"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      default_scopes:
+        - "chat:write"
+        - "channels:read"
+      scope_separator: ","
+      pkce: false
+    credentials:
+      bot_token:
+        type: string
+        title: Bot User OAuth Token (Advanced)
+        description: "Only needed if using a bot token instead of OAuth"
+        secret: true
+        required: false
+        doc_url: "https://api.slack.com/tutorials/tracks/getting-a-token"
+    connection_config:
+      default_channel:
+        type: string
+        title: Default Channel ID
+        description: "Right-click a channel → View details → scroll to the bottom for the ID"
+        example: "C01ABCDEF23"
+        required: false
+    api:
+      base_url: "https://slack.com/api"
+      headers:
+        authorization: "Bearer ${credentials.bot_token}"
+
+  google_calendar:
+    display_name: Google Calendar
+    description: "Create events, check availability, or list appointments on Google Calendar. Use when user mentions calendar, appointments, scheduling, or booking."
+    categories:
+      - scheduling
+      - productivity
+    icon: calendar
+    auth:
+      type: oauth2
+      authorization_url: "https://accounts.google.com/o/oauth2/v2/auth"
+      token_url: "https://oauth2.googleapis.com/token"
+      authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "https://www.googleapis.com/auth/calendar"
+      scope_separator: " "
+      pkce: true
+      token_expires_in_seconds: 3600
+      refresh_margin_minutes: 5
+    credentials:
+      access_token:
+        type: string
+        title: Service Account Token (Advanced)
+        description: "Only needed if using a service account instead of OAuth"
+        secret: true
+        required: false
+        doc_url: "https://developers.google.com/calendar/api/quickstart/python"
+    connection_config:
+      calendar_id:
+        type: string
+        title: Calendar ID
+        description: "Your calendar ID (usually your email). Leave blank to use 'primary'."
+        example: "primary"
+        required: false
+    api:
+      base_url: "https://www.googleapis.com/calendar/v3"
+      headers:
+        authorization: "Bearer ${credentials.access_token}"
+
+  custom_webhook:
+    display_name: Custom Webhook
+    description: "Call any custom HTTPS endpoint. Use when user mentions a webhook, custom API, or an integration not listed above."
+    categories:
+      - custom
+    icon: webhook
+    auth:
+      type: api_key
+    credentials:
+      api_key:
+        type: string
+        title: API Key / Bearer Token
+        description: "Leave empty if the endpoint requires no authentication"
+        secret: true
+        required: false
+    connection_config:
+      header_name:
+        type: string
+        title: Auth Header Name
+        description: "Header to send the key in. Default: Authorization (as 'Bearer <key>')"
+        example: "Authorization"
+        required: false
+
+  hubspot:
+    display_name: HubSpot
+    description: "Read or update CRM contacts, deals, companies, and tickets in HubSpot. Use when user mentions HubSpot, CRM, leads, or sales pipeline."
+    categories:
+      - crm
+      - marketing
+    icon: bar-chart-2
+    auth:
+      type: oauth2
+      authorization_url: "https://app.hubspot.com/oauth/authorize"
+      token_url: "https://api.hubapi.com/oauth/v3/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "contacts"
+        - "crm.objects.contacts.read"
+        - "crm.objects.contacts.write"
+      scope_separator: " "
+      pkce: false
+      token_expires_in_seconds: 1800
+      refresh_margin_minutes: 5
+    api:
+      base_url: "https://api.hubapi.com"
+
+  gohighlevel:
+    display_name: GoHighLevel
+    description: "Read or update contacts, opportunities, notes, and conversations in GoHighLevel. Use when user mentions GoHighLevel, HighLevel, CRM follow-up, or sub-account contacts."
+    categories:
+      - crm
+      - communication
+    icon: users
+    auth:
+      type: oauth2
+      authorization_url: "https://marketplace.gohighlevel.com/oauth/chooselocation"
+      token_url: "https://services.leadconnectorhq.com/oauth/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+        user_type: Location
+      refresh_params:
+        grant_type: refresh_token
+        user_type: Location
+      default_scopes:
+        - "contacts.readonly"
+        - "contacts.write"
+        - "opportunities.readonly"
+        - "opportunities.write"
+        - "conversations/message.readonly"
+      scope_separator: " "
+      pkce: false
+      token_expires_in_seconds: 86400
+      refresh_margin_minutes: 10
+    connection_config:
+      location_id:
+        type: string
+        title: Location ID
+        description: "GoHighLevel sub-account/location ID. Needed for most CRM actions and should match the location where the app was installed."
+        example: "HjiMUOsCCHCjtxzEf8PR"
+        required: false
+      company_id:
+        type: string
+        title: Company ID
+        description: "Agency/company ID. Useful when an agency-level install must be converted to a location token."
+        example: "GNb7aIv4rQFVb9iwNl5K"
+        required: false
+    api:
+      base_url: "https://services.leadconnectorhq.com"
+      headers:
+        Version: "2021-07-28"
+
+  discord:
+    display_name: Discord
+    description: "Send messages to Discord channels or DMs. Use when user mentions Discord, gaming communities, or team chat on Discord."
+    categories:
+      - messaging
+      - social
+    icon: message-square
+    auth:
+      type: oauth2
+      authorization_url: "https://discord.com/api/oauth2/authorize"
+      token_url: "https://discord.com/api/oauth2/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "bot"
+        - "messages.read"
+        - "webhook.incoming"
+      scope_separator: " "
+      pkce: false
+      token_expires_in_seconds: 604800
+      refresh_margin_minutes: 60
+    credentials:
+      bot_token:
+        type: string
+        title: Bot Token (Advanced)
+        description: "Use a Bot Token if you prefer not to use OAuth"
+        secret: true
+        required: false
+        doc_url: "https://discord.com/developers/docs/topics/oauth2"
+    api:
+      base_url: "https://discord.com/api/v10"
+
+  calendly:
+    display_name: Calendly
+    description: "Check availability, create scheduling links, or list upcoming events in Calendly. Use when user mentions Calendly or meeting scheduling."
+    categories:
+      - scheduling
+      - productivity
+    icon: calendar
+    auth:
+      type: oauth2
+      authorization_url: "https://auth.calendly.com/oauth/authorize"
+      token_url: "https://auth.calendly.com/oauth/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes: []
+      scope_separator: " "
+      pkce: false
+      token_expires_in_seconds: 7200
+      refresh_margin_minutes: 10
+    api:
+      base_url: "https://api.calendly.com"
+
+  clickup:
+    display_name: ClickUp
+    description: "Create or update tasks and lists in ClickUp. Use when user mentions ClickUp, project management, or task tracking."
+    categories:
+      - productivity
+      - ticketing
+    icon: check-square
+    auth:
+      type: oauth2
+      authorization_url: "https://app.clickup.com/api"
+      token_url: "https://api.clickup.com/api/v2/oauth/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes: []
+      scope_separator: " "
+      pkce: false
+    api:
+      base_url: "https://api.clickup.com"
+
+  typeform:
+    display_name: Typeform
+    description: "Retrieve form responses or create forms in Typeform. Use when user mentions Typeform, surveys, or form submissions."
+    categories:
+      - surveys
+    icon: file-text
+    auth:
+      type: oauth2
+      authorization_url: "https://api.typeform.com/oauth/authorize"
+      token_url: "https://api.typeform.com/oauth/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "offline"
+        - "responses:read"
+        - "forms:read"
+      scope_separator: " "
+      pkce: false
+      token_expires_in_seconds: 7200
+      refresh_margin_minutes: 10
+    api:
+      base_url: "https://api.typeform.com"
+
+  pagerduty:
+    display_name: PagerDuty
+    description: "Trigger, acknowledge, or resolve PagerDuty incidents. Use when user mentions PagerDuty, on-call, or incident management."
+    categories:
+      - dev-tools
+    icon: bell
+    auth:
+      type: oauth2
+      authorization_url: "https://app.pagerduty.com/oauth/authorize"
+      token_url: "https://app.pagerduty.com/oauth/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "read"
+        - "write"
+      scope_separator: " "
+      pkce: false
+      token_expires_in_seconds: 86400
+      refresh_margin_minutes: 30
+    api:
+      base_url: "https://api.pagerduty.com"
+
+  google_docs:
+    display_name: Google Docs
+    description: "Read, create, or edit Google Docs documents. Use when user mentions Google Docs or document editing."
+    categories:
+      - productivity
+    icon: file-text
+    auth:
+      type: oauth2
+      authorization_url: "https://accounts.google.com/o/oauth2/v2/auth"
+      token_url: "https://oauth2.googleapis.com/token"
+      authorization_params:
+        response_type: code
+        access_type: offline
+        prompt: consent
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "https://www.googleapis.com/auth/documents"
+        - "https://www.googleapis.com/auth/drive.file"
+      scope_separator: " "
+      pkce: true
+      token_expires_in_seconds: 3600
+      refresh_margin_minutes: 5
+    api:
+      base_url: "https://docs.googleapis.com/v1"
+
+  microsoft_outlook:
+    display_name: Microsoft Outlook
+    description: "Send emails, read the inbox, or manage calendar events in Microsoft Outlook. Use when user mentions Outlook, email, or Microsoft calendar."
+    categories:
+      - communication
+      - scheduling
+    icon: mail
+    auth:
+      type: oauth2
+      authorization_url: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+      token_url: "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+      authorization_params:
+        response_type: code
+      token_params:
+        grant_type: authorization_code
+      refresh_params:
+        grant_type: refresh_token
+      default_scopes:
+        - "offline_access"
+        - "Mail.ReadWrite"
+        - "Mail.Send"
+        - "Calendars.ReadWrite"
+      scope_separator: " "
+      pkce: true
+      token_expires_in_seconds: 3600
+      refresh_margin_minutes: 5
+    api:
+      base_url: "https://graph.microsoft.com/v1.0"
+
+  # ── Email / Marketing ────────────────────────────────────────────
+
+  sendgrid:
+    display_name: SendGrid
+    description: "Send transactional or marketing emails via SendGrid. Use when user mentions SendGrid, email delivery, or transactional email."
+    categories:
+      - marketing
+      - communication
+    icon: mail
+    auth:
+      type: api_key
+    credentials:
+      api_key:
+        type: string
+        title: API Key
+        description: "Your SendGrid API key — starts with SG."
+        secret: true
+        required: true
+        doc_url: "https://app.sendgrid.com/settings/api_keys"
+    api:
+      base_url: "https://api.sendgrid.com/v3"
+      headers:
+        authorization: "Bearer ${credentials.api_key}"
+
+  brevo:
+    display_name: Brevo
+    description: "Send emails, SMS, or manage contacts via Brevo (formerly Sendinblue). Use when user mentions Brevo or Sendinblue."
+    categories:
+      - marketing
+      - communication
+    icon: mail
+    auth:
+      type: api_key
+    credentials:
+      api_key:
+        type: string
+        title: API Key
+        description: "Your Brevo v3 API key"
+        secret: true
+        required: true
+        doc_url: "https://account.brevo.com/advanced/api"
+    api:
+      base_url: "https://api.brevo.com/v3"
+      headers:
+        api-key: "${credentials.api_key}"
+
+  # ── Forms & Surveys ──────────────────────────────────────────────
+
+  jotform:
+    display_name: JotForm
+    description: "Retrieve form submissions from JotForm. Use when user mentions JotForm or online form responses."
+    categories:
+      - surveys
+    icon: file-text
+    auth:
+      type: api_key
+    credentials:
+      api_key:
+        type: string
+        title: API Key
+        description: "Your JotForm API key"
+        secret: true
+        required: true
+        doc_url: "https://api.jotform.com/docs/#authentication"
+    api:
+      base_url: "https://api.jotform.com"
+      headers:
+        apikey: "${credentials.api_key}"
+
+  # ── E-Commerce / Payments ────────────────────────────────────────
+
+  # ── Sales / Outreach ─────────────────────────────────────────────
+
+  lemlist:
+    display_name: Lemlist
+    description: "Create campaigns, add leads, or track email outreach in Lemlist. Use when user mentions Lemlist, cold email, or sales outreach."
+    categories:
+      - marketing
+      - communication
+    icon: send
+    auth:
+      type: api_key
+    credentials:
+      api_key:
+        type: string
+        title: API Key
+        description: "Your Lemlist API key"
+        secret: true
+        required: true
+        doc_url: "https://developer.lemlist.com/#authentication"
+    api:
+      base_url: "https://api.lemlist.com/api"
+      headers:
+        authorization: "Bearer ${credentials.api_key}"
+
+  # ── Cal.com ───────────────────────────────────────────────────────
+
+  cal_com:
+    display_name: Cal.com
+    description: "Manage bookings, availability, and event types in Cal.com. Use when user mentions Cal.com, scheduling links, or calendar bookings."
+    categories:
+      - scheduling
+      - productivity
+    icon: calendar
+    auth:
+      type: api_key
+    credentials:
+      api_key:
+        type: string
+        title: API Key
+        description: "Your Cal.com API key"
+        secret: true
+        required: true
+        doc_url: "https://cal.com/docs/api-reference/v2/introduction"
+    api:
+      base_url: "https://api.cal.com/v2"
+      headers:
+        authorization: "Bearer ${credentials.api_key}"

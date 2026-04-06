@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package agent;
+
+option go_package = "github.com/prime8ai/voice-agent-os/proto/agent";
+
+enum AudioLayout {
+  AUDIO_LAYOUT_UNSPECIFIED = 0;
+  AUDIO_LAYOUT_STEREO = 1;
+  AUDIO_LAYOUT_MONO = 2;
+}
+
+enum AudioFormat {
+  AUDIO_FORMAT_UNSPECIFIED = 0;
+  AUDIO_FORMAT_OPUS = 1;
+  AUDIO_FORMAT_WAV = 2;
+}
+
+// Session recording configuration
+message RecordingConfig {
+  bool enabled = 1;
+  string output_uri = 2;
+  AudioLayout audio_layout = 3;
+  uint32 sample_rate = 4;
+  AudioFormat audio_format = 5;
+  uint32 max_duration_secs = 6;
+  bool save_transcript = 7;
+  bool include_tool_details = 8;
+  bool include_llm_metadata = 9;
+}
+
+// Tool parameter definition
+message ParamDef {
+  string name = 1;
+  string type = 2; // e.g., "string", "integer", "boolean"
+  string description = 3;
+  bool required = 4;
+  repeated string options = 5; // Valid values for enum types
+}
+
+// A tool definition (always a JS script)
+message ToolDef {
+  string description = 1;
+  string script = 2;
+  repeated ParamDef params = 3;
+  // If true (default), barge-in drops the tool result
+  bool cancel_on_barge_in = 4;
+  // If true, this tool has side effects
+  bool side_effect = 5;
+}
+
+// A single node in the graph
+message NodeDef {
+  string system_prompt = 1;
+  repeated string tools = 2; // keys referencing AgentGraphDef.tools
+  repeated string edges = 3; // node IDs this node can transfer to
+  
+  optional string model = 4;
+  optional double temperature = 5;
+  optional uint32 max_tokens = 6;
+  optional string voice_id = 7; // TTS voice override
+  optional string greeting = 8;
+}
+
+// A complete agent graph
+message AgentGraphDef {
+  // The ID of the node to start with
+  string entry = 1;
+  
+  // All nodes keyed by ID
+  map<string, NodeDef> nodes = 2;
+  
+  // All tool definitions keyed by tool name
+  map<string, ToolDef> tools = 3;
+  
+  // -- Agent-wide settings --
+  optional string language = 4;  // ISO 639-1
+  optional string timezone = 5;  // IANA timezone
+  optional string voice_id = 6;  // Default TTS voice ID
+  optional string tts_provider = 7; // e.g. "elevenlabs"
+  optional string tts_model = 8;    // e.g. "eleven_turbo_v2"
+  
+  // Session recording configuration
+  optional RecordingConfig recording = 9;
+  
+  // Envelope field for versions (e.g. "v3_graph")
+  optional string config_schema_version = 10;
+}

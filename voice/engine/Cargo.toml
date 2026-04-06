@@ -1,0 +1,129 @@
+[package]
+name = "voice-engine"
+version = "0.1.0"
+edition = "2021"
+description = "Voice Engine — ultra-fast async orchestrator for STT → LLM → TTS"
+default-run = "voice-engine"
+
+[lib]
+name = "voice_engine"
+# cdylib for PyO3 shared library (only when pyo3 feature enabled), rlib for Rust tests
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "voice-engine"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["time"] }
+
+# WebSocket server
+axum = { version = "0.8", features = ["ws"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+
+# WebSocket client (STT)
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+futures-util = "0.3"
+
+# HTTP client (LLM SSE, TTS, external service integrations)
+reqwest = { version = "0.12", features = ["json", "stream", "rustls-tls", "multipart"] }
+
+# ONNX Runtime (Silero VAD, DTLN denoiser, Smart Turn)
+ort = { version = "=2.0.0-rc.11" }
+ndarray = "0.17"
+rustfft = "6"
+num-complex = "0.4"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4"] }
+thiserror = "2"
+bytes = "1"
+realfft = "3"
+
+# Python bindings (optional — activated by maturin)
+pyo3 = { version = "0.24", features = ["extension-module"], optional = true }
+
+# Audio resampling (libsoxr — high-quality sinc interpolation)
+soxr = { path = "crates/soxr" }
+
+# LLM orchestration (conversation, streaming, tool batching)
+agent-kit = { path = "crates/agent-kit" }
+
+# Observability (event bus, tracing, metrics, OTel/Langfuse export)
+voice-trace = { path = "crates/voice-trace" }
+
+# Transport abstraction layer (WebSocket, future WebRTC)
+voice-transport = { path = "crates/transport" }
+
+# Protobuf / gRPC
+proto = { path = "crates/proto" }
+prost = "0.14.3"
+pbjson = "0.9.0"
+
+# TLS
+rustls = { version = "0.23.37", features = ["ring"] }
+
+# Tract (DeepFilterNet3 streaming inference)
+tract-onnx = "0.22"
+tract-pulse = "0.22"
+tract-core = "0.22"
+
+# Misc utilities
+dashmap = "6.1.0"
+unicode-segmentation = "1.12.0"
+dirs = "6.0.0"
+nnnoiseless = { version = "0.5.1", default-features = false }
+envy = "0.4.2"
+dotenvy = "0.15.7"
+rquickjs = { version = "0.6", features = ["parallel", "bindgen"] }
+hmac = "0.12.1"
+sha2 = "0.10.9"
+hex = "0.4.3"
+secrecy = "0.10.3"
+async-trait = "0.1.89"
+base64 = "0.22.1"
+
+[features]
+default = []
+pyo3 = ["dep:pyo3"]
+otel = ["voice-trace/otel"]
+opus = ["voice-trace/opus"]
+webrtc = ["voice-transport/webrtc"]
+telephony = ["voice-transport/telephony"]
+
+[dev-dependencies]
+async-trait = "0.1.89"
+proptest = "1.10.0"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+# Fast release profile for local dev (used by maturin via pyproject.toml).
+# Still optimized, but skips full LTO and allows parallel codegen.
+[profile.dev-release]
+inherits = "release"
+lto = "thin"
+codegen-units = 16
+
+# Optimize all dependencies even in dev mode for faster builds
+[profile.dev.package."*"]
+opt-level = 3
+debug = false
+
+# Reduce debug info for our own code to speed up dev builds
+[profile.dev]
+debug = 1

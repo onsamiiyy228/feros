@@ -1,0 +1,81 @@
+[package]
+name = "voice-server"
+version = "0.1.0"
+edition = "2021"
+description = "Voice Server — telephony gateway that bridges Twilio/Telnyx to voice-engine"
+
+[[bin]]
+name = "voice-server"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# HTTP + WebSocket server
+axum = { version = "0.8", features = ["ws"] }
+tower-http = { version = "0.6", features = ["cors", "fs", "trace"] }
+
+# Database (Postgres, async, compile-time query checks)
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "uuid", "json", "macros"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["clock"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Utilities
+uuid = { version = "1", features = ["v4"] }
+thiserror = "2"
+dotenvy = "0.15.7"
+envy = "0.4.2"
+
+# TLS
+rustls = { version = "0.23.37", features = ["ring"] }
+
+# voice-engine as a library (includes agent-kit transitively, but we need it directly for AgentGraphDef)
+voice-engine = { path = "../engine" }
+voice-trace = { path = "../engine/crates/voice-trace" }
+agent-kit = { path = "../engine/crates/agent-kit" }
+integrations = { path = "../../integrations", optional = true }
+
+# Vault client (talks to integrations or HashiCorp Vault)
+vaultrs = "0.7"
+secrecy = "0.10"
+proto = { version = "0.1.0", path = "../engine/crates/proto" }
+
+[features]
+# Mirror voice-engine's pyproject.toml feature set, minus pyo3 (no Python
+# bindings needed) and quickjs/rhai (agent scripting engines not used here).
+# `integrations` enables credential decryption + embedded vault server for
+# per-agent OAuth secrets. Disable it to build a minimal gateway that reads
+# only plaintext credentials from the DB.
+default = ["telephony", "webrtc", "pg", "langfuse", "opus", "integrations"]
+telephony = ["voice-engine/telephony"]
+webrtc    = ["voice-engine/webrtc"]
+pg        = ["voice-trace/pg"]
+langfuse  = ["voice-trace/langfuse"]
+opus      = ["voice-engine/opus"]
+integrations = ["dep:integrations"]
+# Enable S3 recording uploads.  Not included in `default` — opt-in for production.
+# cargo build --features s3 (or set in Dockerfile)
+s3        = ["voice-trace/s3"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+debug = 1                    # line tables only (no full DWARF) — faster link
+split-debuginfo = "unpacked" # skip dsymutil on macOS — biggest link speedup
+incremental = true           # default but explicit
+
+[profile.dev.package."*"]
+opt-level = 3  # pre-optimize all deps so only your code rebuilds
+debug = false

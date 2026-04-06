@@ -1,0 +1,8 @@
+[package]
+name = "soxr"
+version = "0.1.0"
+edition = "2021"
+description = "Safe Rust wrapper around libsoxr — streaming audio resampling with sinc interpolation"
+
+[build-dependencies]
+cc = "1.0"

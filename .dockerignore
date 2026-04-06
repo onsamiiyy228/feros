@@ -1,0 +1,34 @@
+# ── Rust build artifacts ──────────────────────────────────────────
+# Biggest offenders: voice/engine/target (~25 GB), voice/server/target (~3.4 GB),
+# integrations/target (~2.8 GB). BuildKit cache mounts in the Dockerfiles handle
+# incremental Rust builds inside the container — local target/ is never needed.
+**/target/
+
+# ── Python / uv ───────────────────────────────────────────────────
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/.venv/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+
+# ── Node / Frontend ───────────────────────────────────────────────
+studio/web/node_modules/
+studio/web/.next/
+studio/web/.turbo/
+
+# ── Version control ───────────────────────────────────────────────
+.git/
+
+# ── Env / secrets ─────────────────────────────────────────────────
+.env*
+!.env.example
+
+# ── Editor / OS noise ─────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+.claude/
+**/*.swp
+**/*.swo

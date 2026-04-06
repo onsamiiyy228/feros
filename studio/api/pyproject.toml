@@ -1,0 +1,130 @@
+[project]
+name = "studio-api"
+version = "0.3.0"
+description = "Open-source Voice Agent OS — API"
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    # Web framework
+    "fastapi>=0.129.0",
+    "uvicorn[standard]>=0.41.0",
+    "python-multipart>=0.0.22",
+    # Database
+    "sqlalchemy[asyncio]>=2.0.46",
+    "asyncpg>=0.31.0",
+    "alembic>=1.18.4",
+    # Redis
+    "redis[hiredis]>=7.1.1",
+    # Pydantic
+    "pydantic>=2.12.5",
+    "pydantic-settings>=2.13.0",
+    "pydantic-ai>=1.61.0",
+    "google-genai>=1.10",
+    # Auth (optional, simple JWT)
+    "python-jose[cryptography]>=3.5.0",
+    "passlib[bcrypt]>=1.7.4",
+    # HTTP client
+    "httpx>=0.28.1",
+    "python-dotenv>=1.2.1",
+    # Logging
+    "loguru>=0.7.3",
+    # Document parsing
+    "pymupdf>=1.27.1",
+    "python-docx>=1.2.0",
+    # Telephony SDKs (webhook signature verification)
+    "twilio>=9.10.2",
+    "telnyx>=4.39.0",
+    "pynacl>=1.5.0", # Required by telnyx SDK for Ed25519 webhook verification
+    "pyyaml>=6.0.3",
+    "voice-engine",
+    "integrations",
+    "authlib>=1.6.8",
+    "protobuf>=6.33.5",
+    "mypy-protobuf>=5.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "ruff>=0.8.0",
+    "mypy>=1.14.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "types-pyyaml>=6.0.12.20250915",
+    "setuptools>=75.0.0",
+    "rich>=14.3.2",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    "*_pb2.py",
+    "*_pb2.pyi",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by black)
+    "B008",   # Depends() in defaults (FastAPI convention)
+    "SIM105", # contextlib.suppress — less clear with async
+]
+
+[tool.ruff.lint.per-file-ignores]
+"app/models/*.py" = ["F821"]  # SQLAlchemy forward reference strings
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unreachable = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+exclude = ["(?i).*_pb2\\.pyi?$"]
+
+[[tool.mypy.overrides]]
+module = [
+    "jose.*",
+    "passlib.*",
+    "pydantic_ai.*",
+    "loguru.*",
+    "authlib.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["app.schemas.agent_pb2"]
+disable_error_code = ["type-arg"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.uv.sources]
+voice-engine = { path = "../../voice/engine", editable = true }
+integrations = { path = "../../integrations", editable = true }
