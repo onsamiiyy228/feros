@@ -85,6 +85,8 @@ Open `http://localhost:3000` to access the dashboard.
 ## Roadmap
 
 - [ ] Outbound calls — agent-initiated dialing with retry and scheduling
+- [ ] Dynamic Agent Variables — resolve runtime context at session start for personalized conversations
+- [ ] Granular Usage Billing — step-level cost attribution across models and third-party services
 - [ ] Gemini Live native audio — end-to-end multimodal backend
 - [ ] Direct PSTN via SIP — no Twilio or Telnyx required
 - [ ] Agent-to-agent evaluation — tester agent calling target agent over live audio
