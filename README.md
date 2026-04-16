@@ -5,10 +5,9 @@
   </picture>
 </p>
 
+[![Website](https://img.shields.io/badge/Website-feros.ai-black?logo=googlechrome&logoColor=white)](https://feros.ai)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-Join%20us-5865F2?logo=discord&logoColor=white)](http://discord.com/invite/yjfk7KuXgq)
-
-**Website:** [https://feros.ai](https://feros.ai)
 
 **Feros Voice Agent OS** is built with a clear goal: providing an **open**, **airtight**, and **enterprise-grade** infrastructure layer for production voice AI.
 
@@ -88,6 +87,8 @@ Open `http://localhost:3000` to access the dashboard.
 | Voice Server | `http://localhost:8300` |
 
 `AUTH__SECRET_KEY` and `DATABASE__URL` must be set consistently across all services in your `.env`.
+
+The minimum runtime configuration is 2 CPU cores and 2 GB of RAM. Hosting the web app on Vercel or Cloudflare can reduce the resource requirements of the main runtime. For heavier workloads, we recommend 4 CPU cores and 8 GB of RAM.
 
 ## Roadmap
 
