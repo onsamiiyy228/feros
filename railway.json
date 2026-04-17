@@ -1,5 +1,6 @@
 {
   "build": {
-    "builder": "DOCKER_COMPOSE"
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "./Dockerfile"
   }
 }
